@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CompatibilityController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RoommateMatchController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentPreferenceController;
 use App\Http\Controllers\StudentSearchController;
@@ -45,7 +46,33 @@ Route::middleware('auth')->group(function () {
     Route::get('students', [StudentSearchController::class, 'index'])->name('students.index');
     Route::get('students/{id}', [StudentSearchController::class, 'show'])->name('students.show');
 
+    Route::get('roommate-requests', [\App\Http\Controllers\RoommateRequestController::class, 'index'])->name('roommate-requests.index');
+    Route::get('roommate-request/history', [\App\Http\Controllers\RoommateRequestController::class, 'history'])->name('roommate-requests.history');
+    Route::post('roommate-request/send', [\App\Http\Controllers\RoommateRequestController::class, 'send'])->name('roommate-requests.send');
+    Route::post('roommate-request/{id}/accept', [\App\Http\Controllers\RoommateRequestController::class, 'accept'])->name('roommate-requests.accept');
+    Route::post('roommate-request/{id}/reject', [\App\Http\Controllers\RoommateRequestController::class, 'reject'])->name('roommate-requests.reject');
+    Route::post('roommate-request/{id}/cancel', [\App\Http\Controllers\RoommateRequestController::class, 'cancel'])->name('roommate-requests.cancel');
+
+    Route::get('roommate-match', [RoommateMatchController::class, 'index'])->name('roommate-match.index');
+    Route::get('roommate-match/history', [RoommateMatchController::class, 'history'])->name('roommate-match.history');
+    Route::get('roommate-match/{id}', [RoommateMatchController::class, 'show'])->whereNumber('id')->name('roommate-match.show');
+    Route::post('roommate-match/end', [RoommateMatchController::class, 'endMatch'])->name('roommate-match.end');
+
     Route::get('compatibility', [CompatibilityController::class, 'index'])->name('compatibility.index');
     Route::get('compatibility/{id}', [CompatibilityController::class, 'show'])->name('compatibility.show');
+
+    // Messaging
+    Route::get('messages', [\App\Http\Controllers\ConversationController::class, 'index'])->name('messages.index');
+    Route::get('messages/{id}', [\App\Http\Controllers\ConversationController::class, 'show'])->name('messages.show');
+    Route::post('messages/open', [\App\Http\Controllers\ConversationController::class, 'createOrOpen'])->name('messages.open');
+
+    Route::post('messages/send', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.send');
+    Route::post('messages/read', [\App\Http\Controllers\MessageController::class, 'markAsRead'])->name('messages.read');
+
+    Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/{id}/redirect', [\App\Http\Controllers\NotificationController::class, 'redirect'])->name('notifications.redirect');
+    Route::post('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::delete('notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 

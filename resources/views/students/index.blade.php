@@ -10,7 +10,7 @@
             <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
         </div>
 
-        <div class="card rounded-card shadow-sm mb-4">
+        <div class="card rounded-card shadow-sm mb-4" id="student-search-card">
             <div class="card-body">
                 <form method="GET" action="{{ route('students.index') }}">
                     <div class="row g-3">
@@ -122,20 +122,20 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-lg-2">
-                            <label class="form-label">Sort by</label>
-                            <select name="sort_by" class="form-select">
-                                <option value="compatibility_desc" {{ ($sortBy ?? '') === 'compatibility_desc' ? 'selected' : '' }}>Highest Compatibility</option>
-                                <option value="compatibility_asc" {{ ($sortBy ?? '') === 'compatibility_asc' ? 'selected' : '' }}>Lowest Compatibility</option>
-                                <option value="newest" {{ ($sortBy ?? '') === 'newest' ? 'selected' : '' }}>Newest Students</option>
-                                <option value="oldest" {{ ($sortBy ?? '') === 'oldest' ? 'selected' : '' }}>Oldest Students</option>
-                                <option value="name_asc" {{ ($sortBy ?? '') === 'name_asc' ? 'selected' : '' }}>Name A-Z</option>
-                                <option value="name_desc" {{ ($sortBy ?? '') === 'name_desc' ? 'selected' : '' }}>Name Z-A</option>
-                            </select>
-                        </div>
-                        <div class="col-12 text-end">
-                            <a href="{{ route('students.index') }}" class="btn btn-outline-secondary me-2">Reset</a>
-                            <button type="submit" class="btn btn-primary">Search</button>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                                <label class="form-label mb-0">Sort by</label>
+                                <select name="sort_by" class="form-select form-select-sm w-auto">
+                                    <option value="compatibility_desc" {{ ($sortBy ?? '') === 'compatibility_desc' ? 'selected' : '' }}>Highest Compatibility</option>
+                                    <option value="compatibility_asc" {{ ($sortBy ?? '') === 'compatibility_asc' ? 'selected' : '' }}>Lowest Compatibility</option>
+                                    <option value="newest" {{ ($sortBy ?? '') === 'newest' ? 'selected' : '' }}>Newest Students</option>
+                                    <option value="oldest" {{ ($sortBy ?? '') === 'oldest' ? 'selected' : '' }}>Oldest Students</option>
+                                    <option value="name_asc" {{ ($sortBy ?? '') === 'name_asc' ? 'selected' : '' }}>Name A-Z</option>
+                                    <option value="name_desc" {{ ($sortBy ?? '') === 'name_desc' ? 'selected' : '' }}>Name Z-A</option>
+                                </select>
+                                <a href="{{ route('students.index') }}" class="btn btn-outline-secondary">Reset</a>
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -150,48 +150,10 @@
             <span class="badge bg-secondary">Page {{ $users->currentPage() }} of {{ $users->lastPage() }}</span>
         </div>
 
-        <div class="row g-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             @forelse($users as $student)
-                <div class="col-lg-4">
-                    <div class="card rounded-card shadow-sm h-100 hover-shadow">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                @if(optional($student->studentProfile)->profile_photo)
-                                    <img src="{{ asset('storage/' . $student->studentProfile->profile_photo) }}" alt="Profile photo" class="rounded-circle profile-photo">
-                                @else
-                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center profile-photo">
-                                        <span class="fs-4">{{ strtoupper(substr($student->name, 0, 1)) }}</span>
-                                    </div>
-                                @endif
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">{{ $student->name }}</h5>
-                                    <small class="text-muted">{{ optional($student->studentProfile)->department ? strtoupper(optional($student->studentProfile)->department) : 'Department not set' }}</small>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <span class="badge bg-info">ID: {{ optional($student->studentProfile)->student_id ?? 'N/A' }}</span>
-                                <span class="badge bg-secondary">Batch: {{ optional($student->studentProfile)->batch ?? 'N/A' }}</span>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="small text-muted">Compatibility</span>
-                                    <strong>{{ $student->compatibility_score !== null ? $student->compatibility_score . '%' : 'N/A' }}</strong>
-                                </div>
-                                <div class="progress progress-xs">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ $student->compatibility_score ?? 0 }}%;" aria-valuenow="{{ $student->compatibility_score ?? 0 }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-
-                            <p class="text-truncate-2 text-muted mb-4">{{ optional($student->studentProfile)->bio ?? 'No bio provided yet.' }}</p>
-
-                            <div class="mt-auto">
-                                <a href="{{ route('students.show', ['id' => $student->id]) }}" class="btn btn-primary w-100 mb-2">View Profile</a>
-                                <button type="button" class="btn btn-outline-secondary w-100" disabled>Send Roommate Request</button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col">
+                    @include('partials.profile_card', ['student' => $student])
                 </div>
             @empty
                 <div class="col-12">
@@ -200,8 +162,25 @@
             @endforelse
         </div>
 
-        <div class="mt-4">
+        <div class="mt-4 d-flex justify-content-center">
             {{ $users->links() }}
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const params = new URLSearchParams(window.location.search);
+            const openSearch = params.has('open_search') || params.has('q');
+            if (openSearch) {
+                const card = document.getElementById('student-search-card');
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const firstField = card.querySelector('input, select');
+                    if (firstField) {
+                        firstField.focus();
+                    }
+                }
+            }
+        });
+    </script>
 @endsection

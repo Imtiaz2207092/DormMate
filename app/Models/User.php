@@ -75,9 +75,53 @@ class User extends Authenticatable
         return $this->hasMany(RoommateRequest::class, 'receiver_id');
     }
 
-    public function currentRoommate()
+    public function roommateMatchesAsOne()
     {
-        return $this->belongsToMany(User::class, 'roommate_requests', 'sender_id', 'receiver_id')
-            ->where('roommate_requests.status', 'accepted');
+        return $this->hasMany(RoommateMatch::class, 'student_one_id');
+    }
+
+    public function roommateMatchesAsTwo()
+    {
+        return $this->hasMany(RoommateMatch::class, 'student_two_id');
+    }
+
+    public function activeRoommateMatch()
+    {
+        return RoommateMatch::active()->forUser($this->id)->first();
+    }
+
+    public function hasActiveRoommate(): bool
+    {
+        return RoommateMatch::active()->forUser($this->id)->exists();
+    }
+
+    public function currentRoommate(): ?User
+    {
+        $match = $this->activeRoommateMatch();
+
+        return $match ? $match->otherStudent($this) : null;
+    }
+
+    // Conversations where the user is participant
+    public function conversations()
+    {
+        return Conversation::where('user_one_id', $this->id)
+            ->orWhere('user_two_id', $this->id);
+    }
+
+    public function hasConversationWith(User $user): bool
+    {
+        $ids = [$this->id, $user->id];
+        sort($ids);
+        return Conversation::where(function ($q) use ($ids) {
+            $q->where('user_one_id', $ids[0])->where('user_two_id', $ids[1]);
+        })->exists();
+    }
+
+    public function getConversationWith(User $user): ?\App\Models\Conversation
+    {
+        $ids = [$this->id, $user->id];
+        sort($ids);
+        return Conversation::where('user_one_id', $ids[0])->where('user_two_id', $ids[1])->first();
     }
 }

@@ -15,6 +15,11 @@ class RoommateRequest extends Model
         'receiver_id',
         'status',
         'message',
+        'accepted_at',
+    ];
+
+    protected $casts = [
+        'accepted_at' => 'datetime',
     ];
 
     public function sender(): BelongsTo

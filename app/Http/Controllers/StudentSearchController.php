@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StudentSearchRequest;
+use App\Models\RoommateMatch;
 use App\Models\StudentPreference;
 use App\Models\StudentProfile;
+use App\Models\RoommateRequest;
 use App\Models\User;
 use App\Services\CompatibilityService;
 use Illuminate\Http\Request;
@@ -124,6 +126,25 @@ class StudentSearchController extends Controller
             });
         }
 
+        $requestedIds = RoommateRequest::where('sender_id', $user->id)
+            ->where('status', 'pending')
+            ->pluck('receiver_id')
+            ->toArray();
+
+        $incomingPendingIds = RoommateRequest::where('receiver_id', $user->id)
+            ->where('status', 'pending')
+            ->pluck('sender_id')
+            ->toArray();
+
+        $matchedIds = RoommateMatch::active()
+            ->forUser($user->id)
+            ->get()
+            ->flatMap(fn($match) => [$match->student_one_id, $match->student_two_id])
+            ->unique()
+            ->filter(fn($id) => $id !== $user->id)
+            ->values()
+            ->toArray();
+
         return view('students.index', [
             'users' => $paginated,
             'filters' => $data,
@@ -139,6 +160,9 @@ class StudentSearchController extends Controller
             'roomTemperatures' => $roomTemperatures,
             'musicPreferences' => $musicPreferences,
             'personalities' => $personalities,
+            'requestedIds' => $requestedIds,
+            'incomingPendingIds' => $incomingPendingIds,
+            'matchedIds' => $matchedIds,
         ]);
     }
 
@@ -149,14 +173,47 @@ class StudentSearchController extends Controller
             ->whereHas('studentProfile')
             ->findOrFail($id);
 
+        $user = $request->user();
         $score = null;
-        if ($request->user()->studentProfile && $request->user()->studentPreference && $student->studentPreference) {
-            $score = $compatibility->calculateScore($request->user(), $student);
+        if ($user->studentProfile && $user->studentPreference && $student->studentPreference) {
+            $score = $compatibility->calculateScore($user, $student);
         }
+
+        $existingRequest = RoommateRequest::where(function ($query) use ($user, $student) {
+                $query->where('sender_id', $user->id)->where('receiver_id', $student->id);
+            })
+            ->orWhere(function ($query) use ($user, $student) {
+                $query->where('sender_id', $student->id)->where('receiver_id', $user->id);
+            })
+            ->latest('created_at')
+            ->first();
+
+        $hasExistingMatchWithStudent = RoommateMatch::active()
+            ->where(function ($query) use ($user, $student) {
+                $query->where(function ($pair) use ($user, $student) {
+                    $pair->where('student_one_id', $user->id)
+                        ->where('student_two_id', $student->id);
+                })->orWhere(function ($pair) use ($user, $student) {
+                    $pair->where('student_one_id', $student->id)
+                        ->where('student_two_id', $user->id);
+                });
+            })
+            ->exists();
+
+        $canSendRequest = ! $hasExistingMatchWithStudent
+            && ! ($existingRequest && $existingRequest->status === 'pending')
+            && ! $user->hasActiveRoommate()
+            && ! $student->hasActiveRoommate();
+        $requestStatus = $existingRequest?->status;
 
         return view('students.show', [
             'student' => $student,
             'score' => $score,
+            'canSendRequest' => $canSendRequest,
+            'requestStatus' => $requestStatus,
+            'existingRequest' => $existingRequest,
+            'studentCurrentRoommate' => $student->currentRoommate(),
+            'studentCurrentMatch' => $student->activeRoommateMatch(),
         ]);
     }
 

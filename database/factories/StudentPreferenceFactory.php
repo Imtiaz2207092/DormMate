@@ -1,0 +1,44 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\StudentPreference;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<\App\Models\StudentPreference>
+ */
+class StudentPreferenceFactory extends Factory
+{
+    protected $model = StudentPreference::class;
+
+    public function definition(): array
+    {
+        $sleepSchedules = ['early', 'late', 'normal'];
+        $studyHabits = ['loud', 'silent', 'group study'];
+        $cleanliness = ['low', 'medium', 'high'];
+        $noise = ['low', 'medium', 'high'];
+        $temperatures = ['hot', 'cold'];
+        $music = ['yes', 'no', 'sometimes'];
+        $personality = ['introvert', 'ambivert', 'extrovert'];
+
+        return [
+            'sleep_schedule' => fake()->randomElement($sleepSchedules),
+            'wake_up_time' => fake()->time('H:i'),
+            'study_habit' => fake()->randomElement($studyHabits),
+            'cleanliness' => fake()->randomElement($cleanliness),
+            'smoking' => fake()->boolean(30),
+            'noise_tolerance' => fake()->randomElement($noise),
+            'guests_frequency' => fake()->randomElement(['rarely', 'sometimes', 'often']),
+            'room_temperature' => fake()->randomElement($temperatures),
+            'music_preference' => fake()->randomElement($music),
+            'lights_preference' => fake()->randomElement(['dark', 'dim', 'bright']),
+            'introvert_extrovert' => fake()->randomElement($personality),
+            'sleep_with_light' => fake()->boolean(50),
+            'pets' => fake()->boolean(20),
+            'hobbies' => fake()->words(3, true),
+            'languages' => fake()->languageCode() . ', ' . fake()->languageCode(),
+            'additional_notes' => fake()->sentence(),
+        ];
+    }
+}

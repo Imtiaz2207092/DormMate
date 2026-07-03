@@ -9,3 +9,13 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+.profile-card-body {
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-card-actions {
+    margin-top: auto;
+}

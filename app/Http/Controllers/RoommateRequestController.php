@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RoommateMatch;
 use App\Models\RoommateRequest;
 use App\Models\User;
 use App\Services\CompatibilityService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class RoommateRequestController extends Controller
 {
@@ -21,6 +21,7 @@ class RoommateRequestController extends Controller
 
         $incoming = RoommateRequest::with(['sender.studentProfile', 'sender.studentPreference'])
             ->where('receiver_id', $user->id)
+            ->where('status', 'pending')
             ->orderByDesc('created_at')
             ->paginate(10, ['*'], 'incoming_page');
 
@@ -108,20 +109,28 @@ class RoommateRequestController extends Controller
 
         $receiver = User::findOrFail($receiverId);
 
-        $hasAccepted = RoommateRequest::where(function ($query) use ($user) {
-            $query->where('sender_id', $user->id)->orWhere('receiver_id', $user->id);
-        })->where('status', 'accepted')->exists();
-
-        if ($hasAccepted) {
-            return back()->with('error', 'You already have an active roommate.');
+        if ($user->hasActiveRoommate()) {
+            return back()->with('error', 'You already have an active roommate match and cannot send a new request.');
         }
 
-        $receiverHasAccepted = RoommateRequest::where(function ($query) use ($receiverId) {
-            $query->where('sender_id', $receiverId)->orWhere('receiver_id', $receiverId);
-        })->where('status', 'accepted')->exists();
+        if ($receiver->hasActiveRoommate()) {
+            return back()->with('error', 'This student already has an active roommate match.');
+        }
 
-        if ($receiverHasAccepted) {
-            return back()->with('error', 'This student already has an active roommate.');
+        $existingMatchBetweenPair = RoommateMatch::active()
+            ->where(function ($query) use ($user, $receiverId) {
+                $query->where(function ($pair) use ($user, $receiverId) {
+                    $pair->where('student_one_id', $user->id)
+                        ->where('student_two_id', $receiverId);
+                })->orWhere(function ($pair) use ($user, $receiverId) {
+                    $pair->where('student_one_id', $receiverId)
+                        ->where('student_two_id', $user->id);
+                });
+            })
+            ->exists();
+
+        if ($existingMatchBetweenPair) {
+            return back()->with('error', 'You already have an active roommate match with this student.');
         }
 
         $duplicate = RoommateRequest::where('sender_id', $user->id)
@@ -133,43 +142,84 @@ class RoommateRequestController extends Controller
             return back()->with('error', 'You already have a pending request for this student.');
         }
 
-        RoommateRequest::create([
+        $roommateRequest = RoommateRequest::create([
             'sender_id' => $user->id,
             'receiver_id' => $receiverId,
             'status' => 'pending',
             'message' => $request->input('message'),
         ]);
 
+        $receiver->notify(new \App\Notifications\NewRoommateRequestNotification($roommateRequest));
+
         return back()->with('status', 'Roommate request sent successfully.');
     }
 
-    public function accept(Request $request, $id)
+    public function accept(Request $request, CompatibilityService $compatibility, $id)
     {
         $user = $request->user();
-        $roommateRequest = RoommateRequest::where('id', $id)
-            ->where('receiver_id', $user->id)
-            ->where('status', 'pending')
-            ->firstOrFail();
+        $roommateRequest = RoommateRequest::with(['sender', 'receiver'])->find($id);
 
-        $senderHasAccepted = RoommateRequest::where(function ($query) use ($roommateRequest) {
-            $query->where('sender_id', $roommateRequest->sender_id)->orWhere('receiver_id', $roommateRequest->sender_id);
-        })->where('status', 'accepted')->exists();
-
-        if ($senderHasAccepted) {
-            return back()->with('error', 'The sender already has an active roommate.');
+        if (! $roommateRequest) {
+            return back()->with('error', 'Roommate request not found.');
         }
 
-        $receiverHasAccepted = RoommateRequest::where(function ($query) use ($roommateRequest) {
-            $query->where('sender_id', $roommateRequest->receiver_id)->orWhere('receiver_id', $roommateRequest->receiver_id);
-        })->where('status', 'accepted')->exists();
-
-        if ($receiverHasAccepted) {
-            return back()->with('error', 'You already have an active roommate.');
+        if ($roommateRequest->receiver_id !== $user->id) {
+            return back()->with('error', 'You are not authorized to accept this request.');
         }
 
-        $roommateRequest->update(['status' => 'accepted']);
+        if ($roommateRequest->status !== 'pending') {
+            return back()->with('error', 'Only pending requests can be accepted.');
+        }
 
-        return back()->with('status', 'Roommate request accepted.');
+        if ($roommateRequest->sender_id === $roommateRequest->receiver_id) {
+            return back()->with('error', 'You cannot accept your own request.');
+        }
+
+        if ($roommateRequest->sender->hasActiveRoommate()) {
+            return back()->with('error', 'The requester already has an active roommate match.');
+        }
+
+        if ($roommateRequest->receiver->hasActiveRoommate()) {
+            return back()->with('error', 'You already have an active roommate match.');
+        }
+
+        $existingMatchBetweenPair = RoommateMatch::active()
+            ->where(function ($query) use ($roommateRequest) {
+                $query->where(function ($pair) use ($roommateRequest) {
+                    $pair->where('student_one_id', $roommateRequest->sender_id)
+                        ->where('student_two_id', $roommateRequest->receiver_id);
+                })->orWhere(function ($pair) use ($roommateRequest) {
+                    $pair->where('student_one_id', $roommateRequest->receiver_id)
+                        ->where('student_two_id', $roommateRequest->sender_id);
+                });
+            })
+            ->exists();
+
+        if ($existingMatchBetweenPair) {
+            return back()->with('error', 'This request already has an active roommate match.');
+        }
+
+        $roommateRequest->status = 'accepted';
+        $roommateRequest->accepted_at = now();
+        $roommateRequest->save();
+
+        $roommateRequest->sender->notify(new \App\Notifications\RoommateRequestAcceptedNotification($roommateRequest));
+
+        $compatibilityScore = $compatibility->calculateScore($roommateRequest->sender, $roommateRequest->receiver);
+
+        if (class_exists(RoommateMatch::class)) {
+            RoommateMatch::create([
+                'student_one_id' => $roommateRequest->sender_id,
+                'student_two_id' => $roommateRequest->receiver_id,
+                'compatibility_score' => $compatibilityScore,
+                'matched_at' => now(),
+                'status' => 'active',
+            ]);
+        } else {
+            // Match will be created in Feature 8
+        }
+
+        return back()->with('status', 'Roommate request accepted successfully.');
     }
 
     public function reject(Request $request, $id)
@@ -181,6 +231,7 @@ class RoommateRequestController extends Controller
             ->firstOrFail();
 
         $roommateRequest->update(['status' => 'rejected']);
+        $roommateRequest->sender->notify(new \App\Notifications\RoommateRequestRejectedNotification($roommateRequest));
 
         return back()->with('status', 'Roommate request rejected.');
     }

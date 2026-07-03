@@ -44,6 +44,11 @@
 
                                 <div class="mt-auto">
                                     <a href="{{ route('compatibility.show', ['id' => $match->id]) }}" class="btn btn-primary w-100">View Profile</a>
+                                    <form method="POST" action="{{ route('messages.open') }}" class="mt-2">
+                                        @csrf
+                                        <input type="hidden" name="other_user_id" value="{{ $match->id }}">
+                                        <button type="submit" class="btn btn-primary w-100">Chat</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

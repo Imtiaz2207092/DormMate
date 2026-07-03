@@ -15,6 +15,16 @@ class StudentProfileController extends Controller
         $this->middleware('auth');
     }
 
+    private function departments(): array
+    {
+        return ['cse', 'eee', 'me', 'civil', 'bme', 'mte', 'mse', 'becm', 'arch'];
+    }
+
+    private function halls(): array
+    {
+        return ['amar ekushey hall', 'lalon shah hall', 'fajlul haq hall', 'khan jahan ali hall', 'rashid hall', 'rokeya hall'];
+    }
+
     public function show(Request $request)
     {
         $profile = $request->user()->studentProfile;
@@ -23,7 +33,11 @@ class StudentProfileController extends Controller
             return redirect()->route('profile.create');
         }
 
-        return view('profiles.show', ['profile' => $profile]);
+        return view('profiles.show', [
+            'profile' => $profile,
+            'currentRoommate' => $request->user()->currentRoommate(),
+            'currentMatch' => $request->user()->activeRoommateMatch(),
+        ]);
     }
 
     public function create(Request $request)
@@ -33,7 +47,11 @@ class StudentProfileController extends Controller
             return redirect()->route('profile.edit');
         }
 
-        return view('profiles.form', ['profile' => new StudentProfile()]);
+        return view('profiles.form', [
+            'profile' => new StudentProfile(),
+            'departments' => $this->departments(),
+            'halls' => $this->halls(),
+        ]);
     }
 
     public function store(StudentProfileRequest $request): RedirectResponse
@@ -66,7 +84,11 @@ class StudentProfileController extends Controller
             return redirect()->route('profile.create');
         }
 
-        return view('profiles.form', ['profile' => $profile]);
+        return view('profiles.form', [
+            'profile' => $profile,
+            'departments' => $this->departments(),
+            'halls' => $this->halls(),
+        ]);
     }
 
     public function update(StudentProfileRequest $request): RedirectResponse

@@ -20,7 +20,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">Department</label>
-                        <input type="text" name="department" value="{{ old('department', $profile->department) }}" class="form-control @error('department') is-invalid @enderror">
+                        <select name="department" class="form-select @error('department') is-invalid @enderror">
+                            <option value="">Select department</option>
+                            @foreach($departments as $department)
+                                <option value="{{ $department }}" {{ old('department', $profile->department) === $department ? 'selected' : '' }}>{{ strtoupper($department) }}</option>
+                            @endforeach
+                        </select>
                         @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
@@ -32,7 +37,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">Hall</label>
-                        <input type="text" name="hall" value="{{ old('hall', $profile->hall) }}" class="form-control @error('hall') is-invalid @enderror">
+                        <select name="hall" class="form-select @error('hall') is-invalid @enderror">
+                            <option value="">Select hall</option>
+                            @foreach($halls as $hall)
+                                <option value="{{ $hall }}" {{ old('hall', $profile->hall) === $hall ? 'selected' : '' }}>{{ ucwords($hall) }}</option>
+                            @endforeach
+                        </select>
                         @error('hall')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
