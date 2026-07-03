@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $topMatches = collect();
 
         if ($user->studentProfile && $user->studentPreference) {
-            $topMatches = $compatibility->getBestMatches($user, 3);
+            $topMatches = $compatibility->getBestMatches($user, 10);
         }
 
         $profileCompletedFields = [

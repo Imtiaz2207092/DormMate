@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\RoommateRequest;
 use App\Models\StudentPreference;
 use App\Models\StudentProfile;
 use Database\Factories\UserFactory;
@@ -62,5 +63,21 @@ class User extends Authenticatable
     public function studentPreference()
     {
         return $this->hasOne(StudentPreference::class);
+    }
+
+    public function sentRequests()
+    {
+        return $this->hasMany(RoommateRequest::class, 'sender_id');
+    }
+
+    public function receivedRequests()
+    {
+        return $this->hasMany(RoommateRequest::class, 'receiver_id');
+    }
+
+    public function currentRoommate()
+    {
+        return $this->belongsToMany(User::class, 'roommate_requests', 'sender_id', 'receiver_id')
+            ->where('roommate_requests.status', 'accepted');
     }
 }

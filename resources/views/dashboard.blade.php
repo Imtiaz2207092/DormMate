@@ -5,10 +5,55 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
             <div>
                 <h2 class="mb-1">Dashboard</h2>
-                <p class="text-muted mb-0">Your DormMate control center for profile and preference management.</p>
+                <p class="text-muted mb-0">Your DormMate control center for profile, preferences, and roommate discovery.</p>
             </div>
             <div class="text-md-end">
                 <span class="badge bg-secondary">{{ now()->format('F j, Y') }}</span>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card rounded-card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-muted">Profile Status</h6>
+                        <div class="d-flex align-items-center justify-content-between mt-3">
+                            <div>
+                                <h4 class="mb-1">{{ $profile ? 'Completed' : 'Incomplete' }}</h4>
+                                <p class="text-muted mb-0">Student profile completion status.</p>
+                            </div>
+                            <span class="badge {{ $profile ? 'bg-success' : 'bg-secondary' }}">{{ $profile ? 'Ready' : 'Setup' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card rounded-card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-muted">Preference Status</h6>
+                        <div class="d-flex align-items-center justify-content-between mt-3">
+                            <div>
+                                <h4 class="mb-1">{{ $preference ? 'Completed' : 'Incomplete' }}</h4>
+                                <p class="text-muted mb-0">Lifestyle preferences readiness.</p>
+                            </div>
+                            <span class="badge {{ $preference ? 'bg-success' : 'bg-secondary' }}">{{ $preference ? 'Ready' : 'Update' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card rounded-card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-muted">Match Readiness</h6>
+                        <div class="d-flex align-items-center justify-content-between mt-3">
+                            <div>
+                                <h4 class="mb-1">{{ $completionPercentage }}%</h4>
+                                <p class="text-muted mb-0">Overall completion across profile and preferences.</p>
+                            </div>
+                            <span class="badge bg-primary">Dashboard</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -205,53 +250,38 @@
                     <div class="col-lg-12">
                         <div class="card shadow-sm rounded-4">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
                                         <h5 class="card-title mb-1">Top Compatible Students</h5>
-                                        <p class="text-muted small mb-0">Matches are calculated instantly from completed profiles and preferences.</p>
+                                        <p class="text-muted small mb-0">Top 3 matches are shown here. Tap to view the full top 10 list.</p>
                                     </div>
-                                    <a href="{{ route('compatibility.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                                    <a href="{{ route('students.index', ['sort_by' => 'compatibility_desc']) }}" class="btn btn-sm btn-outline-primary">See Top 10</a>
                                 </div>
 
                                 @if($topMatches->isEmpty())
-                                    <div class="alert alert-info mb-0">No compatible students found.</div>
+                                    <div class="alert alert-info mb-0">Complete your profile and preferences to see top matches.</div>
                                 @else
-                                    <div class="row g-3">
-                                        @foreach($topMatches as $match)
-                                            <div class="col-md-4">
-                                                <div class="card border-0 shadow-sm rounded-4 h-100">
-                                                    <div class="card-body d-flex flex-column">
-                                                        <div class="d-flex align-items-center gap-3 mb-3">
-                                                            @if(optional($match->studentProfile)->profile_photo)
-                                                                <img src="{{ asset('storage/' . $match->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:56px; height:56px; object-fit:cover;">
-                                                            @else
-                                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:56px; height:56px;">
-                                                                    {{ strtoupper(substr($match->name, 0, 1)) }}
-                                                                </div>
-                                                            @endif
-                                                            <div>
-                                                                <h6 class="mb-0">{{ $match->name }}</h6>
-                                                                <small class="text-muted">{{ optional($match->studentProfile)->department ?? 'Department not set' }}</small>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mb-3">
-                                                            <div class="d-flex justify-content-between mb-2">
-                                                                <span class="small text-muted">Compatibility</span>
-                                                                <strong>{{ $match->compatibility_score }}%</strong>
-                                                            </div>
-                                                            <div class="progress" style="height: 10px;">
-                                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ $match->compatibility_score }}%;" aria-valuenow="{{ $match->compatibility_score }}" aria-valuemin="0" aria-valuemax="100"></div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="mt-auto">
-                                                            <a href="{{ route('compatibility.show', ['id' => $match->id]) }}" class="btn btn-sm btn-primary w-100">View Profile</a>
+                                    <div class="list-group list-group-flush">
+                                        @foreach($topMatches->take(3) as $index => $match)
+                                            <div class="list-group-item px-0 py-3 border-0">
+                                                <div class="d-flex align-items-center justify-content-between gap-3">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <span class="fs-4">
+                                                            @if($index === 0) 🥇 @elseif($index === 1) 🥈 @else 🥉 @endif
+                                                        </span>
+                                                        <div>
+                                                            <h6 class="mb-0">{{ $match->name }}</h6>
+                                                            <small class="text-muted">{{ optional($match->studentProfile)->department ?? 'Department not set' }}</small>
                                                         </div>
                                                     </div>
+                                                    <span class="badge bg-success rounded-pill">{{ $match->compatibility_score }}%</span>
                                                 </div>
                                             </div>
                                         @endforeach
+                                    </div>
+
+                                    <div class="mt-3 text-end">
+                                        <a href="{{ route('students.index', ['sort_by' => 'compatibility_desc']) }}" class="btn btn-sm btn-primary">View Top 10 Matches</a>
                                     </div>
                                 @endif
                             </div>

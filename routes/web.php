@@ -7,6 +7,7 @@ use App\Http\Controllers\CompatibilityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentPreferenceController;
+use App\Http\Controllers\StudentSearchController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -40,6 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::get('preferences/show', [StudentPreferenceController::class, 'show'])->name('preferences.show');
     Route::get('preferences/edit', [StudentPreferenceController::class, 'edit'])->name('preferences.edit');
     Route::put('preferences', [StudentPreferenceController::class, 'update'])->name('preferences.update');
+
+    Route::get('students', [StudentSearchController::class, 'index'])->name('students.index');
+    Route::get('students/{id}', [StudentSearchController::class, 'show'])->name('students.show');
 
     Route::get('compatibility', [CompatibilityController::class, 'index'])->name('compatibility.index');
     Route::get('compatibility/{id}', [CompatibilityController::class, 'show'])->name('compatibility.show');
