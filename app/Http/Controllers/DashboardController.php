@@ -23,8 +23,10 @@ class DashboardController extends Controller
         $preference = $user->studentPreference;
         $topMatches = collect();
         $recommendedUsers = collect();
+        $bestMatch = null;
 
         if ($user->studentProfile && $user->studentPreference) {
+            $bestMatch = $compatibility->getBestMatches($user, 1)->first();
             $topMatches = $compatibility->getBestMatches($user, 3);
 
             // If there are fewer than 3 compatibility matches (e.g., small seed data),
@@ -63,7 +65,7 @@ class DashboardController extends Controller
             ->get()
             ->map(fn($student) => optional($student->studentProfile)->student_id ?? 'ID ' . $student->id);
 
-        $departments = collect(['cse', 'eee', 'me', 'civil', 'bme', 'mte', 'mse', 'becm', 'arch']);
+        $departments = collect(['eee', 'cse', 'ece', 'bme', 'mse', 'me', 'iem', 'le', 'te', 'ese', 'ce', 'urp', 'becm', 'arch', 'math', 'chem', 'phy', 'hum']);
         $batches = collect(array_map(fn($year) => '2k' . substr((string) $year, 2), range(2018, 2028)));
         $halls = collect(['amar ekushey hall', 'lalon shah hall', 'fajlul haq hall', 'khan jahan ali hall', 'rashid hall', 'rokeya hall']);
         $genders = collect(['male', 'female', 'other']);
@@ -225,6 +227,7 @@ class DashboardController extends Controller
             'dashboardStatus' => 'Completed',
             'topMatches' => $topMatches,
             'recommendedUsers' => $recommendedUsers,
+            'bestMatch' => $bestMatch,
             'studentIds' => $studentIds,
             'departments' => $departments,
             'batches' => $batches,

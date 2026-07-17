@@ -19,6 +19,14 @@ class RoommateRequestController extends Controller
     {
         $user = $request->user();
 
+        // Mark request-related notifications as read
+        $user->unreadNotifications->filter(function ($n) {
+            $type = data_get($n->data, 'type');
+            return in_array($type, ['roommate_request', 'request_accepted', 'request_rejected', 'roommate_removed']);
+        })->each(function($n) {
+            $n->markAsRead();
+        });
+
         $incoming = RoommateRequest::with(['sender.studentProfile', 'sender.studentPreference'])
             ->where('receiver_id', $user->id)
             ->where('status', 'pending')

@@ -17,21 +17,34 @@ class MessageController extends Controller
     {
         $data = $request->validate([
             'conversation_id' => 'required|integer',
-            'message' => 'required|string|max:1000',
+            'message' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
-        $user = $request->user();
+        if (empty($data['message']) && !$request->hasFile('image')) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['error' => 'Cannot send an empty message.'], 422);
+            }
+            return back()->withErrors(['message' => 'Cannot send an empty message.']);
+        }
 
+        $user = $request->user();
         $conversation = Conversation::findOrFail($data['conversation_id']);
 
         if ($conversation->user_one_id !== $user->id && $conversation->user_two_id !== $user->id) {
             abort(403);
         }
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('chat_images', 'public');
+        }
+
         $msg = Message::create([
             'conversation_id' => $conversation->id,
             'sender_id' => $user->id,
-            'message' => trim($data['message']),
+            'message' => isset($data['message']) ? trim($data['message']) : null,
+            'image' => $imagePath,
             'is_read' => false,
         ]);
 
@@ -47,7 +60,8 @@ class MessageController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'message' => $msg->message,
-                'created_at' => $msg->created_at->format('j M Y, H:i'),
+                'image' => $msg->image ? asset('storage/' . $msg->image) : null,
+                'created_at' => $msg->created_at->format('h:i A'),
                 'sender_initial' => strtoupper(substr($user->name, 0, 1)),
             ]);
         }

@@ -11,7 +11,7 @@
             @if(optional($student->studentProfile)->profile_photo)
                 <img src="{{ asset('storage/' . $student->studentProfile->profile_photo) }}" alt="Profile photo" class="rounded-circle profile-photo-lg mb-3">
             @else
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center profile-photo-lg mb-3">
+                <div class="rounded-circle bg-primary-solid d-flex align-items-center justify-content-center profile-photo-lg mb-3">
                     <span class="fs-3">{{ strtoupper(substr($student->name, 0, 1)) }}</span>
                 </div>
             @endif
@@ -39,25 +39,29 @@
 
         <div class="profile-bio text-truncate-2 text-muted mb-3 w-100">{{ optional($student->studentProfile)->bio ?? 'No bio provided yet.' }}</div>
 
-        <div class="d-grid gap-2 w-100 mt-auto profile-card-actions">
-            <a href="{{ route('students.show', ['id' => $student->id]) }}" class="btn btn-primary w-100">View Profile</a>
-            <form method="POST" action="{{ route('messages.open') }}">
+        <div class="d-flex gap-2 w-100 mt-auto profile-card-actions">
+            <a href="{{ route('students.show', ['id' => $student->id]) }}" class="btn btn-primary flex-grow-1">View Profile</a>
+            <form method="POST" action="{{ route('messages.open') }}" class="m-0">
                 @csrf
                 <input type="hidden" name="other_user_id" value="{{ $student->id }}">
-                <button type="submit" class="btn btn-primary w-100">Chat</button>
+                <button type="submit" class="btn btn-outline-primary" style="padding: 0.65rem 0.95rem;" title="Chat"><i class="bi bi-chat-dots"></i></button>
             </form>
+        </div>
+        @if(empty($hideConnect))
+        <div class="w-100 mt-2">
             @if($canSend)
-                <button type="button" class="btn btn-soft-primary w-100" data-bs-toggle="modal" data-bs-target="#sendRequestModal-{{ $student->id }}">Send Roommate Request</button>
+                <button type="button" class="btn btn-soft-primary w-100" data-bs-toggle="modal" data-bs-target="#sendRequestModal-{{ $student->id }}"><i class="bi bi-person-plus me-1"></i> Connect</button>
             @else
-                <button type="button" class="btn btn-soft-secondary w-100" disabled>
+                <button type="button" class="btn btn-soft-secondary w-100" disabled style="opacity: 0.8;">
                     @if($hasAccepted)
-                        Already Connected
+                        <i class="bi bi-people me-1"></i> Connected
                     @else
-                        Request Pending
+                        <i class="bi bi-clock me-1"></i> Pending
                     @endif
                 </button>
             @endif
         </div>
+        @endif
     </div>
 
     @if($canSend)

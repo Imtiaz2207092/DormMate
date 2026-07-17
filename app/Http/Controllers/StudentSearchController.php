@@ -56,7 +56,7 @@ class StudentSearchController extends Controller
 
         $sortBy = $data['sort_by'] ?? 'compatibility_desc';
 
-        $departments = collect(['cse', 'eee', 'me', 'civil', 'bme', 'mte', 'mse', 'becm', 'arch']);
+        $departments = collect(['eee', 'cse', 'ece', 'bme', 'mse', 'me', 'iem', 'le', 'te', 'ese', 'ce', 'urp', 'becm', 'arch', 'math', 'chem', 'phy', 'hum']);
         $batches = collect(array_map(fn($year) => '2k' . substr((string) $year, 2), range(2018, 2028)));
         $halls = collect(['amar ekushey hall', 'lalon shah hall', 'fajlul haq hall', 'khan jahan ali hall', 'rashid hall', 'rokeya hall']);
         $genders = collect(['male', 'female', 'other']);
@@ -208,6 +208,8 @@ class StudentSearchController extends Controller
 
         return view('students.show', [
             'student' => $student,
+            'myPref' => $user->studentPreference,
+            'targetPref' => $student->studentPreference,
             'score' => $score,
             'canSendRequest' => $canSendRequest,
             'requestStatus' => $requestStatus,

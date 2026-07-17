@@ -9,9 +9,16 @@ use App\Http\Controllers\RoommateMatchController;
 use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentPreferenceController;
 use App\Http\Controllers\StudentSearchController;
+use App\Http\Controllers\AdminController;
 
-Route::get('/', function () {
-    return view('welcome');
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index']);
+
+// Admin routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('users', [AdminController::class, 'users'])->name('users.index');
 });
 
 Route::middleware('guest')->group(function () {
@@ -69,10 +76,12 @@ Route::middleware('auth')->group(function () {
     Route::post('messages/send', [\App\Http\Controllers\MessageController::class, 'store'])->name('messages.send');
     Route::post('messages/read', [\App\Http\Controllers\MessageController::class, 'markAsRead'])->name('messages.read');
 
+    Route::get('notifications/poll', [\App\Http\Controllers\NotificationController::class, 'poll'])->name('notifications.poll');
     Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/{id}/redirect', [\App\Http\Controllers\NotificationController::class, 'redirect'])->name('notifications.redirect');
     Route::post('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::delete('notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::post('students/{id}/explain-compatibility', [\App\Http\Controllers\AICompatibilityController::class, 'explain'])->name('students.explain-compatibility');
 });
 

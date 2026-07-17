@@ -41,68 +41,58 @@
                             @php $other = $request->sender; @endphp
                             <div class="col-md-6">
                                 <div class="card rounded-card card-soft shadow-soft h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start gap-3 mb-3">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
                                             @if(optional($other->studentProfile)->profile_photo)
-                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:60px; height:60px; object-fit:cover;">
+                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:50px; height:50px; object-fit:cover;">
                                             @else
-                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size: 1.1rem;">
                                                     {{ strtoupper(substr($other->name, 0, 1)) }}
                                                 </div>
                                             @endif
-                                            <div class="flex-grow-1">
-                                                <h5 class="mb-1">{{ $other->name }}</h5>
-                                                <div class="text-muted small">{{ optional($other->studentProfile)->department ?? 'Department not set' }}</div>
-                                                <div class="text-muted small">Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }} • {{ optional($other->studentProfile)->hall ?? 'Hall not set' }}</div>
+                                            <div class="flex-grow-1" style="min-width: 0;">
+                                                <h5 class="mb-0 text-truncate fs-6">{{ $other->name }}</h5>
+                                                <div class="text-muted small text-truncate" style="font-size: 0.78rem;">{{ optional($other->studentProfile)->department ?? 'Department not set' }} • Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="small text-muted">Compatibility</span>
-                                                <strong>{{ $compatibility->calculateScore(auth()->user(), $other) }}%</strong>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small text-muted" style="font-size: 0.78rem;">Compatibility</span>
+                                                <strong style="font-size: 0.78rem;">{{ $compatibility->calculateScore(auth()->user(), $other) }}%</strong>
                                             </div>
-                                            <div class="progress progress-xs rounded-pill overflow-hidden">
+                                            <div class="progress progress-xs rounded-pill overflow-hidden" style="height: 4px;">
                                                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ $compatibility->calculateScore(auth()->user(), $other) }}%;" aria-valuenow="{{ $compatibility->calculateScore(auth()->user(), $other) }}" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <small class="text-muted">Request sent</small>
-                                            <div>{{ $request->created_at?->format('F j, Y • h:i A') }}</div>
+                                        <div class="mb-2">
+                                            <small class="text-muted" style="font-size: 0.75rem;">Request sent: </small>
+                                            <span style="font-size: 0.78rem;">{{ $request->created_at?->format('M j, Y • h:i A') }}</span>
                                         </div>
 
                                         @if($request->message)
-                                            <div class="mb-3">
-                                                <small class="text-uppercase text-muted">Message</small>
-                                                <div class="border rounded-3 p-3 bg-white">{{ $request->message }}</div>
+                                            <div class="mb-2">
+                                                <small class="text-uppercase text-muted" style="font-size: 0.7rem;">Message</small>
+                                                <div class="border rounded-3 p-2 bg-white small text-secondary">{{ $request->message }}</div>
                                             </div>
                                         @endif
-
-                                        <div class="d-flex flex-column flex-sm-row gap-2">
-                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-outline-primary w-100">View Profile</a>
-                                            <form method="POST" action="{{ route('messages.open') }}" class="w-100">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-sm btn-outline-primary flex-grow-1">View Profile</a>
+                                            <form method="POST" action="{{ route('messages.open') }}" class="m-0">
                                                 @csrf
                                                 <input type="hidden" name="other_user_id" value="{{ $other->id }}">
-                                                <button type="submit" class="btn btn-outline-secondary w-100">Message</button>
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="height: 34px;" title="Message">
+                                                    <i class="bi bi-chat-dots-fill"></i>
+                                                </button>
                                             </form>
-                                            <form method="POST" action="{{ route('messages.open') }}" class="w-100">
+                                            <form method="POST" action="{{ route('roommate-requests.accept', ['id' => $request->id]) }}" class="m-0 flex-grow-1">
                                                 @csrf
-                                                <input type="hidden" name="other_user_id" value="{{ $other->id }}">
-                                                <button type="submit" class="btn btn-outline-secondary w-100">Message</button>
+                                                <button type="submit" class="btn btn-sm btn-primary w-100">Accept</button>
                                             </form>
-                                            <form method="POST" action="{{ route('messages.open') }}" class="w-100">
+                                            <form method="POST" action="{{ route('roommate-requests.reject', ['id' => $request->id]) }}" class="m-0 flex-grow-1">
                                                 @csrf
-                                                <input type="hidden" name="other_user_id" value="{{ $other->id }}">
-                                                <button type="submit" class="btn btn-outline-secondary w-100">Message</button>
-                                            </form>
-                                            <form method="POST" action="{{ route('roommate-requests.accept', ['id' => $request->id]) }}" class="flex-grow-1">
-                                                @csrf
-                                                <button type="submit" class="btn btn-gradient-primary w-100">Accept</button>
-                                            </form>
-                                            <form method="POST" action="{{ route('roommate-requests.reject', ['id' => $request->id]) }}" class="flex-grow-1">
-                                                @csrf
-                                                <button type="submit" class="btn btn-gradient-danger w-100">Reject</button>
+                                                <button type="submit" class="btn btn-sm btn-gradient-danger w-100">Reject</button>
                                             </form>
                                         </div>
                                     </div>
@@ -123,49 +113,48 @@
                             @php $other = $request->receiver; @endphp
                             <div class="col-md-6">
                                 <div class="card rounded-card card-soft shadow-soft h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start gap-3 mb-3">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
                                             @if(optional($other->studentProfile)->profile_photo)
-                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:60px; height:60px; object-fit:cover;">
+                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:50px; height:50px; object-fit:cover;">
                                             @else
-                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size: 1.1rem;">
                                                     {{ strtoupper(substr($other->name, 0, 1)) }}
                                                 </div>
                                             @endif
-                                            <div class="flex-grow-1">
-                                                <h5 class="mb-1">{{ $other->name }}</h5>
-                                                <div class="text-muted small">{{ optional($other->studentProfile)->department ?? 'Department not set' }}</div>
-                                                <div class="text-muted small">Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }} • {{ optional($other->studentProfile)->hall ?? 'Hall not set' }}</div>
+                                            <div class="flex-grow-1" style="min-width: 0;">
+                                                <h5 class="mb-0 text-truncate fs-6">{{ $other->name }}</h5>
+                                                <div class="text-muted small text-truncate" style="font-size: 0.78rem;">{{ optional($other->studentProfile)->department ?? 'Department not set' }} • Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="small text-muted">Compatibility</span>
-                                                <strong>{{ $compatibility->calculateScore(auth()->user(), $other) }}%</strong>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small text-muted" style="font-size: 0.78rem;">Compatibility</span>
+                                                <strong style="font-size: 0.78rem;">{{ $compatibility->calculateScore(auth()->user(), $other) }}%</strong>
                                             </div>
-                                            <div class="progress progress-xs rounded-pill overflow-hidden">
+                                            <div class="progress progress-xs rounded-pill overflow-hidden" style="height: 4px;">
                                                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ $compatibility->calculateScore(auth()->user(), $other) }}%;" aria-valuenow="{{ $compatibility->calculateScore(auth()->user(), $other) }}" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <small class="text-muted">Request sent</small>
-                                            <div>{{ $request->created_at?->format('F j, Y • h:i A') }}</div>
+                                        <div class="mb-2">
+                                            <small class="text-muted" style="font-size: 0.75rem;">Request sent: </small>
+                                            <span style="font-size: 0.78rem;">{{ $request->created_at?->format('M j, Y • h:i A') }}</span>
                                         </div>
 
                                         @if($request->message)
-                                            <div class="mb-3">
-                                                <small class="text-uppercase text-muted">Message</small>
-                                                <div class="border rounded-3 p-3 bg-light">{{ $request->message }}</div>
+                                            <div class="mb-2">
+                                                <small class="text-uppercase text-muted" style="font-size: 0.7rem;">Message</small>
+                                                <div class="border rounded-3 p-2 bg-light small text-secondary">{{ $request->message }}</div>
                                             </div>
                                         @endif
 
-                                        <div class="d-flex flex-column flex-sm-row gap-2">
-                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-outline-primary w-100">View Profile</a>
-                                            <form method="POST" action="{{ route('roommate-requests.cancel', ['id' => $request->id]) }}" class="flex-grow-1">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-sm btn-outline-primary flex-grow-1">View Profile</a>
+                                            <form method="POST" action="{{ route('roommate-requests.cancel', ['id' => $request->id]) }}" class="m-0 flex-grow-1">
                                                 @csrf
-                                                <button type="submit" class="btn btn-gradient-danger w-100">Cancel Request</button>
+                                                <button type="submit" class="btn btn-sm btn-gradient-danger w-100">Cancel Request</button>
                                             </form>
                                         </div>
                                     </div>
@@ -188,46 +177,45 @@
                             @endphp
                             <div class="col-md-6">
                                 <div class="card rounded-card card-soft shadow-soft h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start gap-3 mb-3">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
                                             @if(optional($other->studentProfile)->profile_photo)
-                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:60px; height:60px; object-fit:cover;">
+                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:50px; height:50px; object-fit:cover;">
                                             @else
-                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size: 1.1rem;">
                                                     {{ strtoupper(substr($other->name, 0, 1)) }}
                                                 </div>
                                             @endif
-                                            <div class="flex-grow-1">
-                                                <h5 class="mb-1">{{ $other->name }}</h5>
-                                                <div class="text-muted small">{{ optional($other->studentProfile)->department ?? 'Department not set' }}</div>
-                                                <div class="text-muted small">Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }} • {{ optional($other->studentProfile)->hall ?? 'Hall not set' }}</div>
+                                            <div class="flex-grow-1" style="min-width: 0;">
+                                                <h5 class="mb-0 text-truncate fs-6">{{ $other->name }}</h5>
+                                                <div class="text-muted small text-truncate" style="font-size: 0.78rem;">{{ optional($other->studentProfile)->department ?? 'Department not set' }} • Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="small text-muted">Compatibility</span>
-                                                <strong>{{ $compatibility->calculateScore(auth()->user(), $other) }}%</strong>
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small text-muted" style="font-size: 0.78rem;">Compatibility</span>
+                                                <strong style="font-size: 0.78rem;">{{ $compatibility->calculateScore(auth()->user(), $other) }}%</strong>
                                             </div>
-                                            <div class="progress progress-xs rounded-pill overflow-hidden">
+                                            <div class="progress progress-xs rounded-pill overflow-hidden" style="height: 4px;">
                                                 <div class="progress-bar bg-success" role="progressbar" style="width: {{ $compatibility->calculateScore(auth()->user(), $other) }}%;" aria-valuenow="{{ $compatibility->calculateScore(auth()->user(), $other) }}" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <small class="text-muted">Request date</small>
-                                            <div>{{ $request->created_at?->format('F j, Y • h:i A') }}</div>
+                                        <div class="mb-2">
+                                            <small class="text-muted" style="font-size: 0.75rem;">Request date: </small>
+                                            <span style="font-size: 0.78rem;">{{ $request->created_at?->format('M j, Y • h:i A') }}</span>
                                         </div>
 
                                         @if($request->message)
-                                            <div class="mb-3">
-                                                <small class="text-uppercase text-muted">Message</small>
-                                                <div class="border rounded-3 p-3 bg-white">{{ $request->message }}</div>
+                                            <div class="mb-2">
+                                                <small class="text-uppercase text-muted" style="font-size: 0.7rem;">Message</small>
+                                                <div class="border rounded-3 p-2 bg-white small text-secondary">{{ $request->message }}</div>
                                             </div>
                                         @endif
 
-                                        <div class="d-flex flex-column flex-sm-row gap-2">
-                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-outline-primary w-100">View Profile</a>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-sm btn-outline-primary w-100">View Profile</a>
                                         </div>
                                     </div>
                                 </div>
@@ -249,37 +237,36 @@
                             @endphp
                             <div class="col-md-6">
                                 <div class="card rounded-card card-soft shadow-soft h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start gap-3 mb-3">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
                                             @if(optional($other->studentProfile)->profile_photo)
-                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:60px; height:60px; object-fit:cover;">
+                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:50px; height:50px; object-fit:cover;">
                                             @else
-                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size: 1.1rem;">
                                                     {{ strtoupper(substr($other->name, 0, 1)) }}
                                                 </div>
                                             @endif
-                                            <div class="flex-grow-1">
-                                                <h5 class="mb-1">{{ $other->name }}</h5>
-                                                <div class="text-muted small">{{ optional($other->studentProfile)->department ?? 'Department not set' }}</div>
-                                                <div class="text-muted small">Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }} • {{ optional($other->studentProfile)->hall ?? 'Hall not set' }}</div>
+                                            <div class="flex-grow-1" style="min-width: 0;">
+                                                <h5 class="mb-0 text-truncate fs-6">{{ $other->name }}</h5>
+                                                <div class="text-muted small text-truncate" style="font-size: 0.78rem;">{{ optional($other->studentProfile)->department ?? 'Department not set' }} • Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <small class="text-muted">Request date</small>
-                                            <div>{{ $request->created_at?->format('F j, Y • h:i A') }}</div>
+                                        <div class="mb-2">
+                                            <small class="text-muted" style="font-size: 0.75rem;">Request date: </small>
+                                            <span style="font-size: 0.78rem;">{{ $request->created_at?->format('M j, Y • h:i A') }}</span>
                                         </div>
 
                                         @if($request->message)
-                                            <div class="mb-3">
-                                                <small class="text-uppercase text-muted">Message</small>
-                                                <div class="border rounded-3 p-3 bg-light">{{ $request->message }}</div>
+                                            <div class="mb-2">
+                                                <small class="text-uppercase text-muted" style="font-size: 0.7rem;">Message</small>
+                                                <div class="border rounded-3 p-2 bg-light small text-secondary">{{ $request->message }}</div>
                                             </div>
                                         @endif
 
-                                        <div class="d-flex flex-column flex-sm-row gap-2 align-items-center">
-                                            <span class="badge bg-danger text-uppercase">Rejected</span>
-                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-outline-primary w-100">View Profile</a>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-danger text-uppercase p-2" style="font-size: 0.75rem; border-radius: var(--radius-sm);">Rejected</span>
+                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-sm btn-outline-primary flex-grow-1">View Profile</a>
                                         </div>
                                     </div>
                                 </div>
@@ -301,37 +288,36 @@
                             @endphp
                             <div class="col-md-6">
                                 <div class="card rounded-card card-soft shadow-soft h-100">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start gap-3 mb-3">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
                                             @if(optional($other->studentProfile)->profile_photo)
-                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:60px; height:60px; object-fit:cover;">
+                                                <img src="{{ asset('storage/' . $other->studentProfile->profile_photo) }}" alt="Profile" class="rounded-circle" style="width:50px; height:50px; object-fit:cover;">
                                             @else
-                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:50px; height:50px; font-size: 1.1rem;">
                                                     {{ strtoupper(substr($other->name, 0, 1)) }}
                                                 </div>
                                             @endif
-                                            <div class="flex-grow-1">
-                                                <h5 class="mb-1">{{ $other->name }}</h5>
-                                                <div class="text-muted small">{{ optional($other->studentProfile)->department ?? 'Department not set' }}</div>
-                                                <div class="text-muted small">Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }} • {{ optional($other->studentProfile)->hall ?? 'Hall not set' }}</div>
+                                            <div class="flex-grow-1" style="min-width: 0;">
+                                                <h5 class="mb-0 text-truncate fs-6">{{ $other->name }}</h5>
+                                                <div class="text-muted small text-truncate" style="font-size: 0.78rem;">{{ optional($other->studentProfile)->department ?? 'Department not set' }} • Batch {{ optional($other->studentProfile)->batch ?? 'N/A' }}</div>
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <small class="text-muted">Request date</small>
-                                            <div>{{ $request->created_at?->format('F j, Y • h:i A') }}</div>
+                                        <div class="mb-2">
+                                            <small class="text-muted" style="font-size: 0.75rem;">Request date: </small>
+                                            <span style="font-size: 0.78rem;">{{ $request->created_at?->format('M j, Y • h:i A') }}</span>
                                         </div>
 
                                         @if($request->message)
-                                            <div class="mb-3">
-                                                <small class="text-uppercase text-muted">Message</small>
-                                                <div class="border rounded-3 p-3 bg-light">{{ $request->message }}</div>
+                                            <div class="mb-2">
+                                                <small class="text-uppercase text-muted" style="font-size: 0.7rem;">Message</small>
+                                                <div class="border rounded-3 p-2 bg-light small text-secondary">{{ $request->message }}</div>
                                             </div>
                                         @endif
 
-                                        <div class="d-flex flex-column flex-sm-row gap-2 align-items-center">
-                                            <span class="badge bg-secondary text-uppercase">Cancelled</span>
-                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-outline-primary w-100">View Profile</a>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-secondary text-uppercase p-2" style="font-size: 0.75rem; border-radius: var(--radius-sm);">Cancelled</span>
+                                            <a href="{{ route('students.show', ['id' => $other->id]) }}" class="btn btn-sm btn-outline-primary flex-grow-1">View Profile</a>
                                         </div>
                                     </div>
                                 </div>

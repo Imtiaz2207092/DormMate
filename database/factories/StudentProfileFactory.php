@@ -14,7 +14,7 @@ class StudentProfileFactory extends Factory
 
     public function definition(): array
     {
-        $departments = ['cse', 'eee', 'me', 'civil', 'bme', 'mte', 'mse', 'becm', 'arch'];
+        $departments = ['eee', 'cse', 'ece', 'bme', 'mse', 'me', 'iem', 'le', 'te', 'ese', 'ce', 'urp', 'becm', 'arch', 'math', 'chem', 'phy', 'hum'];
         $halls = ['amar ekushey hall', 'lalon shah hall', 'fajlul haq hall', 'khan jahan ali hall', 'rashid hall', 'rokeya hall'];
         $genders = ['male', 'female', 'other'];
 

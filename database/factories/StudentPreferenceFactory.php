@@ -14,13 +14,13 @@ class StudentPreferenceFactory extends Factory
 
     public function definition(): array
     {
-        $sleepSchedules = ['early', 'late', 'normal'];
-        $studyHabits = ['loud', 'silent', 'group study'];
-        $cleanliness = ['low', 'medium', 'high'];
-        $noise = ['low', 'medium', 'high'];
-        $temperatures = ['hot', 'cold'];
-        $music = ['yes', 'no', 'sometimes'];
-        $personality = ['introvert', 'ambivert', 'extrovert'];
+        $sleepSchedules = ['Early Sleeper', 'Late Sleeper', 'Flexible'];
+        $studyHabits = ['Silent', 'Group Study', 'Flexible'];
+        $cleanliness = ['Low', 'Medium', 'High'];
+        $noise = ['Low', 'Medium', 'High'];
+        $temperatures = ['Cold', 'Moderate', 'Warm'];
+        $music = ['Quiet', 'Soft Music', 'Loud Music'];
+        $personality = ['Introvert', 'Ambivert', 'Extrovert'];
 
         return [
             'sleep_schedule' => fake()->randomElement($sleepSchedules),
@@ -29,10 +29,10 @@ class StudentPreferenceFactory extends Factory
             'cleanliness' => fake()->randomElement($cleanliness),
             'smoking' => fake()->boolean(30),
             'noise_tolerance' => fake()->randomElement($noise),
-            'guests_frequency' => fake()->randomElement(['rarely', 'sometimes', 'often']),
+            'guests_frequency' => fake()->randomElement(['Never', 'Sometimes', 'Frequently']),
             'room_temperature' => fake()->randomElement($temperatures),
             'music_preference' => fake()->randomElement($music),
-            'lights_preference' => fake()->randomElement(['dark', 'dim', 'bright']),
+            'lights_preference' => fake()->randomElement(['Dark', 'Dim', 'Bright']),
             'introvert_extrovert' => fake()->randomElement($personality),
             'sleep_with_light' => fake()->boolean(50),
             'pets' => fake()->boolean(20),

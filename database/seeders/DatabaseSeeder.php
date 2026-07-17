@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
+            'is_admin' => true,
         ]);
 
         // Create 30 dummy students with profiles and preferences

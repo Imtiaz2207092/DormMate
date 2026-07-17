@@ -17,7 +17,7 @@ class StudentProfileController extends Controller
 
     private function departments(): array
     {
-        return ['cse', 'eee', 'me', 'civil', 'bme', 'mte', 'mse', 'becm', 'arch'];
+        return ['eee', 'cse', 'ece', 'bme', 'mse', 'me', 'iem', 'le', 'te', 'ese', 'ce', 'urp', 'becm', 'arch', 'math', 'chem', 'phy', 'hum'];
     }
 
     private function halls(): array
