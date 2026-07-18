@@ -17,12 +17,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create a test user for login
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
             'is_admin' => true,
+            'user_type' => 'admin',
         ]);
 
         // Create 30 dummy students with profiles and preferences

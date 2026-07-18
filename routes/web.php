@@ -17,8 +17,18 @@ Route::get('/', [HomeController::class, 'index']);
 
 // Admin routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/', function () {
+        return redirect()->route('admin.dashboard');
+    });
+    Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('users', [AdminController::class, 'users'])->name('users.index');
+    Route::get('users/{id}', [AdminController::class, 'show'])->name('users.show');
+    Route::get('users/{id}/edit', [AdminController::class, 'edit'])->name('users.edit');
+    Route::put('users/{id}', [AdminController::class, 'update'])->name('users.update');
+    Route::delete('users/{id}', [AdminController::class, 'destroy'])->name('users.destroy');
+    Route::get('statistics', [AdminController::class, 'statistics'])->name('statistics');
+    Route::get('reports', [AdminController::class, 'reports'])->name('reports');
+    Route::get('settings', [AdminController::class, 'settings'])->name('settings');
 });
 
 Route::middleware('guest')->group(function () {

@@ -32,6 +32,7 @@ class User extends Authenticatable
         'bio',
         'is_admin',
         'active',
+        'user_type',
     ];
 
     /**
@@ -56,7 +57,13 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'active' => 'boolean',
+            'user_type' => 'string',
         ];
+    }
+
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->user_type === 'admin';
     }
 
     public function studentProfile()

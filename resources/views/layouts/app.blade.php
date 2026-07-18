@@ -540,7 +540,7 @@
             <ul class="navbar-nav ms-auto">
                 @auth
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a></li>
-                    @if(auth()->check() && auth()->user()->is_admin)
+                    @if(auth()->check() && auth()->user()->user_type === 'admin')
                         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">Admin Panel</a></li>
                     @endif
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('students.*') ? 'active' : '' }}" href="{{ route('students.index') }}">Find Roommates</a></li>
