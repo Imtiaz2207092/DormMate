@@ -83,40 +83,47 @@
                                 </div>
                             </div>
 
-                            @if($currentRoommate)
-                                <div class="d-flex flex-column flex-lg-row align-items-center gap-4 mt-4">
-                                    <div class="d-flex align-items-center gap-3">
-                                        @if(optional($currentRoommate->studentProfile)->profile_photo)
-                                            <img src="{{ asset('storage/' . $currentRoommate->studentProfile->profile_photo) }}" alt="{{ $currentRoommate->name }}" class="rounded-circle" style="width:72px;height:72px;object-fit:cover;">
-                                        @else
-                                            <div class="rounded-circle bg-primary-solid d-flex align-items-center justify-content-center" style="width:72px;height:72px;">
-                                                <span class="fs-4">{{ strtoupper(substr($currentRoommate->name, 0, 1)) }}</span>
+                            @if(isset($currentMatches) && $currentMatches->isNotEmpty())
+                                <div class="d-flex flex-column gap-3 mt-4">
+                                    @foreach($currentMatches as $match)
+                                        @php
+                                            $roommate = $match->otherStudent($user);
+                                        @endphp
+                                        <div class="d-flex flex-column flex-lg-row align-items-center gap-4 p-3 rounded-4 border border-secondary border-opacity-10 bg-light bg-opacity-10 w-100">
+                                            <div class="d-flex align-items-center gap-3">
+                                                @if(optional($roommate->studentProfile)->profile_photo)
+                                                    <img src="{{ asset('storage/' . $roommate->studentProfile->profile_photo) }}" alt="{{ $roommate->name }}" class="rounded-circle" style="width:72px;height:72px;object-fit:cover;">
+                                                @else
+                                                    <div class="rounded-circle bg-primary-solid d-flex align-items-center justify-content-center" style="width:72px;height:72px;">
+                                                        <span class="fs-4">{{ strtoupper(substr($roommate->name, 0, 1)) }}</span>
+                                                    </div>
+                                                @endif
+                                                <div>
+                                                    <h5 class="mb-1 fw-bold">{{ $roommate->name }}</h5>
+                                                    <p class="text-secondary mb-1">{{ optional($roommate->studentProfile)->department ? strtoupper(optional($roommate->studentProfile)->department) : 'Department not set' }}</p>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <span class="badge bg-secondary">ID: {{ optional($roommate->studentProfile)->student_id ?? 'N/A' }}</span>
+                                                        <span class="badge bg-secondary">Hall: {{ optional($roommate->studentProfile)->hall ?? 'N/A' }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        @endif
-                                        <div>
-                                            <h5 class="mb-1 fw-bold">{{ $currentRoommate->name }}</h5>
-                                            <p class="text-secondary mb-1">{{ optional($currentRoommate->studentProfile)->department ? strtoupper(optional($currentRoommate->studentProfile)->department) : 'Department not set' }}</p>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <span class="badge bg-secondary">ID: {{ optional($currentRoommate->studentProfile)->student_id ?? 'N/A' }}</span>
-                                                <span class="badge bg-secondary">Hall: {{ optional($currentRoommate->studentProfile)->hall ?? 'N/A' }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <div class="d-flex align-items-center gap-3 ms-lg-auto">
-                                        <div class="text-center">
-                                            <div class="fw-semibold fs-4 text-primary">{{ $currentMatch->compatibility_score ?? 0 }}%</div>
-                                            <div class="small text-secondary">Compatibility</div>
+                                            <div class="d-flex align-items-center gap-3 ms-lg-auto">
+                                                <div class="text-center">
+                                                    <div class="fw-semibold fs-4 text-primary">{{ $match->compatibility_score ?? 0 }}%</div>
+                                                    <div class="small text-secondary">Compatibility</div>
+                                                </div>
+                                                <div class="d-flex gap-2 flex-wrap">
+                                                    <a href="{{ route('students.show', $roommate->id) }}" class="btn btn-outline-primary btn-sm">View Profile</a>
+                                                    <form method="POST" action="{{ route('messages.open') }}" class="d-inline-block">
+                                                        @csrf
+                                                        <input type="hidden" name="other_user_id" value="{{ $roommate->id }}">
+                                                        <button type="submit" class="btn btn-primary btn-sm">Message</button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="d-flex gap-2 flex-wrap">
-                                            <a href="{{ route('students.show', $currentRoommate->id) }}" class="btn btn-outline-primary btn-sm">View Profile</a>
-                                            <form method="POST" action="{{ route('messages.open') }}" class="d-inline-block">
-                                                @csrf
-                                                <input type="hidden" name="other_user_id" value="{{ $currentRoommate->id }}">
-                                                <button type="submit" class="btn btn-primary btn-sm">Message</button>
-                                            </form>
-                                        </div>
-                                    </div>
+                                    @endforeach
                                 </div>
                             @else
                                 <div class="alert alert-info mb-0 mt-3">No roommate assigned yet. Search for roommates to create a match or check your pending requests.</div>

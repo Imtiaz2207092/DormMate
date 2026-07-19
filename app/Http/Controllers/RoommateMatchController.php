@@ -17,24 +17,17 @@ class RoommateMatchController extends Controller
     {
         $user = $request->user();
 
-        $currentMatch = RoommateMatch::with(['studentOne.studentProfile', 'studentTwo.studentProfile'])
+        $activeMatches = RoommateMatch::with(['studentOne.studentProfile', 'studentTwo.studentProfile', 'studentOne.studentPreference', 'studentTwo.studentPreference'])
             ->active()
             ->where(function ($query) use ($user) {
                 $query->where('student_one_id', $user->id)
                     ->orWhere('student_two_id', $user->id);
             })
-            ->first();
-
-        $otherStudent = null;
-        if ($currentMatch) {
-            $otherStudent = $currentMatch->student_one_id === $user->id
-                ? $currentMatch->studentTwo
-                : $currentMatch->studentOne;
-        }
+            ->get();
 
         return view('roommate_match.index', [
-            'currentMatch' => $currentMatch,
-            'otherStudent' => $otherStudent,
+            'activeMatches' => $activeMatches,
+            'user' => $user,
         ]);
     }
 

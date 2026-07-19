@@ -179,11 +179,12 @@ class DashboardController extends Controller
             ->where('status', 'pending')
             ->count();
 
-        $currentMatch = RoommateMatch::with(['studentOne.studentProfile', 'studentTwo.studentProfile'])
+        $currentMatches = RoommateMatch::with(['studentOne.studentProfile', 'studentTwo.studentProfile'])
             ->active()
             ->forUser($user->id)
-            ->first();
+            ->get();
 
+        $currentMatch = $currentMatches->first();
         $currentRoommate = $currentMatch ? $currentMatch->otherStudent($user) : null;
 
         $requestedIds = RoommateRequest::where('sender_id', $user->id)
@@ -244,6 +245,7 @@ class DashboardController extends Controller
             'pendingOutgoing' => $pendingOutgoing,
             'currentRoommate' => $currentRoommate,
             'currentMatch' => $currentMatch,
+            'currentMatches' => $currentMatches,
             'latestRequest' => $latestRequest,
             'notifications' => $notifications,
             'requestedIds' => $requestedIds,

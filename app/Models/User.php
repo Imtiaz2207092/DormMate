@@ -103,7 +103,7 @@ class User extends Authenticatable
 
     public function hasActiveRoommate(): bool
     {
-        return RoommateMatch::active()->forUser($this->id)->exists();
+        return RoommateMatch::active()->forUser($this->id)->count() >= 1;
     }
 
     public function currentRoommate(): ?User

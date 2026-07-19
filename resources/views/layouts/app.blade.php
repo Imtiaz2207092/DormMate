@@ -475,7 +475,7 @@
         
         /* Layout fixes */
         .profile-card-fixed {
-            min-height: 520px;
+            min-height: 420px;
             display: flex;
             flex-direction: column;
             overflow: hidden;

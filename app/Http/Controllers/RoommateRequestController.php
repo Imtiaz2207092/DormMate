@@ -118,11 +118,11 @@ class RoommateRequestController extends Controller
         $receiver = User::findOrFail($receiverId);
 
         if ($user->hasActiveRoommate()) {
-            return back()->with('error', 'You already have an active roommate match and cannot send a new request.');
+            return back()->with('error', 'You have already found a roommate.');
         }
 
         if ($receiver->hasActiveRoommate()) {
-            return back()->with('error', 'This student already has an active roommate match.');
+            return back()->with('error', 'This student has already found a roommate.');
         }
 
         $existingMatchBetweenPair = RoommateMatch::active()
