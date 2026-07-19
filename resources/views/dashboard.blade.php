@@ -344,9 +344,9 @@
                     </div>
                 </div>
                         <div>
-                            <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+                            <div class="d-flex flex-row overflow-auto gap-3 pb-3" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
                                 @forelse($recommendedUsers as $student)
-                                    <div class="col">
+                                    <div class="flex-shrink-0" style="width: 270px;">
                                         @include('partials.profile_card', ['student' => $student, 'hideConnect' => true])
                                     </div>
                                 @empty

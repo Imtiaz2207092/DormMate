@@ -49,13 +49,13 @@ class DashboardController extends Controller
                 $topMatches = $topMatches->concat($fillers)->values();
             }
 
-            $recommendedUsers = $compatibility->getBestMatches($user, 8);
+            $recommendedUsers = $compatibility->getBestMatches($user, 100);
         } else {
             $recommendedUsers = User::with('studentProfile')
                 ->where('id', '!=', $user->id)
                 ->whereHas('studentProfile')
                 ->latest()
-                ->take(8)
+                ->take(100)
                 ->get();
         }
 

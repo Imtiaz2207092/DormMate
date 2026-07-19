@@ -172,7 +172,7 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="search-results-grid">
             @forelse($users as $student)
                 <div class="col">
-                    @include('partials.profile_card', ['student' => $student])
+                    @include('partials.profile_card', ['student' => $student, 'hideConnect' => true])
                 </div>
             @empty
                 <div class="col-12">
@@ -248,16 +248,7 @@
                     </div>`;
                 }
 
-                let connectButtonHtml = '';
-                if (student.can_send) {
-                    connectButtonHtml = `<button type="button" class="btn btn-soft-primary w-100 btn-connect-trigger" data-id="${student.id}" data-name="${student.name}"><i class="bi bi-person-plus me-1"></i> Connect</button>`;
-                } else {
-                    const text = student.has_accepted ? 'Connected' : 'Pending';
-                    const icon = student.has_accepted ? 'bi-people' : 'bi-clock';
-                    connectButtonHtml = `<button type="button" class="btn btn-soft-secondary w-100" disabled style="opacity: 0.8;">
-                        <i class="bi ${icon} me-1"></i> ${text}
-                    </button>`;
-                }
+
 
                 return `
                     <div class="col">
@@ -297,9 +288,7 @@
                                         <button type="submit" class="btn btn-outline-primary" style="padding: 0.65rem 0.95rem;" title="Chat"><i class="bi bi-chat-dots"></i></button>
                                     </form>
                                 </div>
-                                <div class="w-100 mt-2">
-                                    ${connectButtonHtml}
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -309,6 +298,8 @@
             async function performSearch() {
                 loadingSpinner.classList.remove('d-none');
                 const queryVal = searchInput ? searchInput.value : '';
+                const filterForm = document.getElementById('search-filter-form');
+                const formData = new URLSearchParams(new FormData(filterForm)).toString();
                 
                 try {
                     const response = await fetch(`/api/search?name=${encodeURIComponent(queryVal)}`, {
